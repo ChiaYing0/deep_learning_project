@@ -1,0 +1,48 @@
+# Project Configuration: Multimodal Model for Adoption Duration Prediction
+# ================================
+
+# ---------- Input format ----------
+image_size: [3, 224, 224]         # RGB image input size
+metadata_dim: 48                  # 經過 one-hot/scaler 處理後的 metadata 維度
+
+# ---------- Model Hyperparameters ----------
+metadata_hidden_dim: 64          # MLP hidden units for metadata branch
+cnn_output_dim: 512              # CNN 輸出向量（e.g. ResNet18）
+fusion_hidden_dim: 256           # Concat 後 Dense 層大小
+dropout_rate: 0.2
+
+# ---------- Training Parameters ----------
+batch_size: 32
+num_epochs: 30
+learning_rate: 0.0005
+optimizer: adam                  # 可選：adam / sgd
+loss_function: mae               # 可選：mae / mse
+early_stopping_patience: 5
+
+# ---------- Dataset Settings ----------
+train_csv: data/train.csv
+val_csv: data/val.csv
+test_csv: data/test.csv
+image_dir: data/images/          # 存放圖像的資料夾
+metadata_columns:                # 請保持與處理後欄位順序一致
+  - sex
+  - age_days
+  - body_type
+  - sterilized
+  - vaccinated
+  - breed_id
+  - color_1
+  - color_2
+  - color_3
+  - intake_type
+  - intake_condition
+  - ...
+
+# ---------- Output ----------
+save_dir: checkpoints/
+save_name: multimodal_model.pt
+log_dir: logs/
+
+# ---------- Misc ----------
+seed: 42
+device: cuda                    # or "cpu"
