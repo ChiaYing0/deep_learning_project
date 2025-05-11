@@ -32,13 +32,13 @@ class Dataset(data.Dataset):
     def get_img_data(self, index):
         # [Image]
         # 拿指定index的資料
-        return np.zeros((3, 5, 5)) # shape = [channel, height, width]
+        return np.zeros((3, 5, 5)).astype(np.float32) # shape = [channel, height, width]
 
     def get_meta_data(self, index):
         # [Meta]
         # 拿指定index的資料
 
-        return np.zeros([6]) # shape = [n_dim]
+        return np.zeros([6]).astype(np.float32) # shape = [n_dim]
 
     def get_target_data(self, index):
         # [Target]

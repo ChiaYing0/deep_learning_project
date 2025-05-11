@@ -1,16 +1,17 @@
 import torch
 import torch.nn as nn
+from MM_Model import MM_Model
 
-class MM_Model(nn.Module):
+# class MM_Model(nn.Module):
 
-    def __init__(self, config):
+#     def __init__(self, config):
 
-        super().__init__()
+#         super().__init__()
 
-        pass
+#         pass
 
-    def forward(self, img_logit, meta_logit):
-        return torch.zeros(img_logit.shape[0], device=img_logit.device)
+#     def forward(self, img_logit, meta_logit):
+#         return torch.zeros(img_logit.shape[0], device=img_logit.device)
 
 class Model(nn.Module):
 
@@ -24,6 +25,11 @@ class Model(nn.Module):
         # 從batch取得network輸入
         return batch['img']
     
+    def get_img_net_out_dim(self):
+        # [Image]
+        # img_net output channel 數
+        return 3
+
     def get_meta_net(self, config):
         # [Meta]
         # 實作net
@@ -34,10 +40,19 @@ class Model(nn.Module):
         # 從batch取得network輸入
         return batch['meta']
 
+    def get_meta_net_out_dim(self):
+        # [Image]
+        # meta_net output channel 數
+        return 6
+
     def get_mm_net(self, config):
         # [MM]
         # 實作net
-        return MM_Model(config)
+        return MM_Model(
+            config,
+            self.get_img_net_out_dim(),
+            self.get_meta_net_out_dim()
+        )
 
     def __init__(self, config):
 

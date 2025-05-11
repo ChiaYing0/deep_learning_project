@@ -17,6 +17,8 @@ class Trainer:
 
             print('do one batch')
             logit = model(batch)
+            print('do one batch done')
+            
             break
 
     def test(self, model, test_dataset):
