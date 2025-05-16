@@ -1,2 +1,21 @@
 # --- mm model ---
 mm_model_dim: 512
+
+# --- Dataset / Data Split ---
+train_csv: "./data/train.csv"
+val_csv: "./data/val.csv"
+test_csv: "./data/test.csv"
+
+
+# --- Training ---
+use_log: True
+lr: 0.001
+batch_size: 32
+epochs: 20
+weight_decay: 0.0001
+use_log: true
+
+# --- meta ---
+meta_input_dim: 51        # number of meta features
+meta_hidden_dims: [64,32] # one or more hidden layers
+meta_embedding_dim: 16    # final embedding size
