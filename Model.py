@@ -18,8 +18,10 @@ class Model(nn.Module):
 
     def get_img_net(self, config):
         # [Image]
-        # 實作net
-        return nn.Identity()
+        # 實作net，使用 ResNet50 提取特徵
+        base = models.resnet50(pretrained=True)
+        return nn.Sequential(*list(base.children())[:-1])
+        # return nn.Identity()
 
     def get_img_data_from_batch(self, batch):
         # [Image]
@@ -29,7 +31,8 @@ class Model(nn.Module):
     def get_img_net_out_dim(self):
         # [Image]
         # img_net output channel 數
-        return 3
+        # ResNet50 輸出維度為 2048
+        return 2048
 
     def get_meta_net(self, config):
         # [Meta]
