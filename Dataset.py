@@ -11,6 +11,8 @@ class Dataset(data.Dataset):
     def init_img_dataset(self, config):
         # [Image]
         # 準備資料集
+        # 從 img 欄位取出圖片檔案名稱
+        self.img_paths = self.df["img"].values
         return None
 
     def init_meta_dataset(self, config):
@@ -55,9 +57,15 @@ class Dataset(data.Dataset):
     def get_img_data(self, index):
         # [Image]
         # 拿指定index的資料
-        arr = np.zeros((3, 5, 5), dtype=np.float32)
-        return tensor(arr)
+        img_name = self.img_paths[index]
+        img_path = os.path.join(self.folder, img_name)
+        image = Image.open(img_path).convert("RGB")
+        return self.transform(image) # (C, H, W)
+        
+        # arr = np.zeros((3, 5, 5), dtype=np.float32)
+        # return tensor(arr)
         # shape = [channel, height, width]
+        # ---------------------------------
 
     def get_meta_data(self, index):
         # [Meta]
