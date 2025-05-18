@@ -22,7 +22,8 @@ class Model(nn.Module):
         # [Image]
         # 實作net，使用 ResNet50 提取特徵
         base = models.resnet50(pretrained=True)
-        return nn.Sequential(*list(base.children())[:-1])
+        backbone = nn.Sequential(*list(base.children())[:-1])
+        return backbone
         # return nn.Identity()
 
     def get_img_data_from_batch(self, batch):
