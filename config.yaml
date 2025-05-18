@@ -5,7 +5,7 @@ mm_model_dim: 512
 train_csv: "./data/train.csv"
 val_csv: "./data/val.csv"
 test_csv: "./data/test.csv"
-
+image_dir: "./processed_image/" # 所有清理好的圖片統一放此資料夾
 
 # --- Training ---
 use_log: True
