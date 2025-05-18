@@ -2,6 +2,7 @@ import torch.utils.data as data
 import numpy as np
 import pandas as pd
 import os
+import torch
 from torch import tensor
 from PIL import Image
 from torchvision import transforms
@@ -14,18 +15,24 @@ class Dataset(data.Dataset):
         # 準備資料集
         # 從 img 欄位取出圖片檔案名稱
         self.img_paths = self.df["img"].values
-        self.folder = "./images"
-        self.transform = "..."
+        self.folder = "./processed_image"
 
-        self.transform = transforms.Compose(  # 再改成你原本的
-            [
+        # transform
+        if self.mode == "train":
+            self.transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ColorJitter(brightness=0.2, contrast=0.2),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                    std=[0.229, 0.224, 0.225])
+            ])
+        else:
+            self.transform = transforms.Compose([
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-                ),
-            ]
-        )
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                    std=[0.229, 0.224, 0.225])
+            ])
 
         return None
 
@@ -73,6 +80,11 @@ class Dataset(data.Dataset):
         # 拿指定index的資料
         img_name = self.img_paths[index]
         img_path = os.path.join(self.folder, img_name)
+
+        if not os.path.exists(img_path):
+            print(f"！！圖片不存在：{img_path}\n")
+            return torch.zeros(3, 224, 224)  # 回傳黑圖代替，避免 crash
+        
         image = Image.open(img_path).convert("RGB")
         return self.transform(image)  # (C, H, W)
 
