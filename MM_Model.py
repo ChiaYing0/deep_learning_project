@@ -14,7 +14,13 @@ class MM_Model(nn.Module):
         self.img_mode_emb = nn.Parameter(torch.rand(self.dim), requires_grad=True)
         self.meta_mode_emb = nn.Parameter(torch.rand(self.dim), requires_grad=True)
 
-        self.transformer = nn.Linear(self.dim, 1)
+        self.transformer = nn.TransformerEncoderLayer(
+            d_model = self.dim,
+            nhead = 4,
+            batch_first=True
+        )
+
+        self.regression_head = nn.Linear(self.dim, 1)
 
 
     def add_pos_encoding(self, img_logit):
@@ -46,7 +52,8 @@ class MM_Model(nn.Module):
         
         concat_logit = torch.cat([img_logit, meta_logit], 2)
 
-        output = self.transformer(concat_logit.mean(-1))
+        output = self.transformer(concat_logit)
+        output = self.regression_head(output.mean(-1))
 
         return output
 
