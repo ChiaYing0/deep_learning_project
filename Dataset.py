@@ -15,7 +15,7 @@ class Dataset(data.Dataset):
         # 準備資料集
         # 從 img 欄位取出圖片檔案名稱
         self.img_paths = self.df["img"].values
-        self.folder = "./processed_image"
+        self.folder = "./images"
 
         # transform
         if self.mode == "train":
