@@ -1,9 +1,10 @@
 import torch.utils.data as data
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-
+import os
 from torch import tensor
+from PIL import Image
+from torchvision import transforms
 
 
 class Dataset(data.Dataset):
@@ -13,6 +14,19 @@ class Dataset(data.Dataset):
         # 準備資料集
         # 從 img 欄位取出圖片檔案名稱
         self.img_paths = self.df["img"].values
+        self.folder = "./images"
+        self.transform = "..."
+
+        self.transform = transforms.Compose(  # 再改成你原本的
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+
         return None
 
     def init_meta_dataset(self, config):
@@ -60,8 +74,8 @@ class Dataset(data.Dataset):
         img_name = self.img_paths[index]
         img_path = os.path.join(self.folder, img_name)
         image = Image.open(img_path).convert("RGB")
-        return self.transform(image) # (C, H, W)
-        
+        return self.transform(image)  # (C, H, W)
+
         # arr = np.zeros((3, 5, 5), dtype=np.float32)
         # return tensor(arr)
         # shape = [channel, height, width]

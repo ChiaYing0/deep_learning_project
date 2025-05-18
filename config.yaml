@@ -13,9 +13,12 @@ lr: 0.001
 batch_size: 32
 epochs: 20
 weight_decay: 0.0001
-use_log: true
 
 # --- meta ---
 meta_input_dim: 51        # number of meta features
-meta_hidden_dims: [64,32] # one or more hidden layers
-meta_embedding_dim: 16    # final embedding size
+meta_hidden_dims: [512,360] #  hidden layers
+meta_embedding_dim: 128    # final embedding size
+meta_dropout: 0.1            # % of dropout
+meta_encoder_ckpt: "meta/meta_encoder.pth"
+meta_pretrain: False # pretrained or not
+

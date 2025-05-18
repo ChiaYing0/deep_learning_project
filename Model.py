@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from MM_Model import MM_Model
+from torchvision import models
+from meta.MetaNet import MetaNet
 
 # class MM_Model(nn.Module):
 
@@ -35,20 +37,26 @@ class Model(nn.Module):
         return 2048
 
     def get_meta_net(self, config):
-        # [Meta]
-        # 實作net
-        layers = []
-        in_dim = config["meta_input_dim"]
+        # [Meta] 實作net
+        net = MetaNet(config)
 
-        # 中間層：Linear → BN → ReLU
-        for h in config["meta_hidden_dims"]:
-            layers += [nn.Linear(in_dim, h), nn.BatchNorm1d(h), nn.ReLU(inplace=True)]
-            in_dim = h
+        if config.get(
+            "meta_pretrain", False
+        ):  # meta_pretrain 為 True 則 load pretrained 的 參數
+            ckpt_path = config.get("meta_encoder_ckpt")
+            if ckpt_path:
+                state_dict = torch.load(ckpt_path)
+                net.encoder.load_state_dict(state_dict)
+                print(f"Loaded pretrained meta encoder from {ckpt_path}")
+            else:
+                print(
+                    "meta_pretrain is True but no 'meta_encoder_ckpt' path is provided."
+                )
 
-        layers.append(nn.Linear(in_dim, config["meta_embedding_dim"]))
-        layers.append(nn.BatchNorm1d(config["meta_embedding_dim"]))
+        else:
+            print("Meta Net Loaded from scratch.")
 
-        return nn.Sequential(*layers)
+        return net
 
     def get_meta_data_from_batch(self, batch):
         # [Meta]
