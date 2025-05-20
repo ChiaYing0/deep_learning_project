@@ -17,7 +17,7 @@ class MM_Model(nn.Module):
         self.transformer = nn.TransformerEncoderLayer(
             d_model = self.dim,
             nhead = 4,
-            batch_first=True
+            batch_first=False
         )
 
         self.regression_head = nn.Linear(self.dim, 1)
@@ -51,9 +51,12 @@ class MM_Model(nn.Module):
         img_logit, meta_logit = self.add_mode_emb(img_logit, meta_logit)
         
         concat_logit = torch.cat([img_logit, meta_logit], 2)
+        concat_logit = concat_logit.permute(2, 0, 1)
 
         output = self.transformer(concat_logit)
+        output = output.permute(1, 2, 0)
         output = self.regression_head(output.mean(-1))
+
 
         return output
 
