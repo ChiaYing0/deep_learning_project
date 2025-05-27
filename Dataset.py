@@ -102,6 +102,13 @@ class Dataset(data.Dataset):
         # [Target]
         # 無論是train, validation, test 都回傳target
         return tensor(self.target[index])
+
+        # # [Target]
+        # # return fake target (e.g. 0) when mode = inference
+        # if self.mode != "inference":
+        #     return tensor(self.target[index])
+        # else:
+        #     return tensor(0.0)
         
 
     def __getitem__(self, index):
