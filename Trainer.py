@@ -130,6 +130,7 @@ class Trainer:
       model.eval()
       test_dataloader = DataLoader(test_dataset, batch_size=self.batch_size)
       predictions = []
+      ground_truth = []
 
       with torch.no_grad():
         for batch in test_dataloader:
@@ -138,8 +139,9 @@ class Trainer:
 
           output = model(batch)
           predictions.extend(output.view(-1).cpu().numpy())
+          ground_truth.extend(batch["target"].view(-1).cpu().numpy())
 
-      return predictions
+      return predictions, ground_truth
 
     def get_loss_function(self, loss_type):
       if loss_type == "mae":

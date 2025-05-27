@@ -43,10 +43,11 @@ def main(args):
         print(f"Loading checkpoint from {checkpoint_path} ...")
         model.load_state_dict(torch.load(checkpoint_path, map_location=trainer.device))
 
-        trainer.test(model, test_set)
+        predictions, ground_truth = trainer.test(model, test_set)
 
         # 儲存結果
         np.save("predictions.npy", predictions)
+        np.save("ground_truth.npy", ground_truth)
         print("Inference done.")
 
 
