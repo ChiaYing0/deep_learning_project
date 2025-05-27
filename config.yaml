@@ -2,14 +2,21 @@
 mm_model_dim: 512
 
 # --- Dataset / Data Split ---
-train_csv: "./data/train.csv"
-val_csv: "./data/val.csv"
-test_csv: "./data/test.csv"
+
+# 資料集設定說明：
+# - train:        完整資料，未刪除 outliers
+# - train_out:    已刪除 outliers 的資料
+# - train_robust: 使用 stratify 且刪除 outliers 的資料
+
+train_csv: "./data/train_robust.csv"
+val_csv: "./data/val_robust.csv"
+test_csv: "./data/test_robust.csv"
 image_dir: "./images/" # 所有清理好的圖片統一放此資料夾
+
 
 # --- Training ---
 use_log: True
-lr: 0.001
+lr: 0.0001
 batch_size: 32
 epochs: 20
 weight_decay: 0.0002
