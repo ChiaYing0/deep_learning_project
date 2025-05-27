@@ -36,7 +36,7 @@ class Trainer:
       model = model.to(self.device)
       optimizer = optim.Adam(model.parameters(), lr=self.lr)
 
-      train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+      train_dataloader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
 
         # for batch in train_dataloader:
 
@@ -95,8 +95,8 @@ class Trainer:
         print(f"💾 Model checkpoint saved to {self.checkpoint_path}")
     
       # Save Log Json
-      filename = f"train_logs_{self.loss_type}_lr{self.lr}.json"
-      with open(filename, "w") as f:
+      filepath = f"./train_logs/train_logs_{self.loss_type}_lr{self.lr}.json"
+      with open(filepath, "w") as f:
         json.dump({
             "meta": self.training_meta,
             "logs": self.train_logs
@@ -140,7 +140,7 @@ class Trainer:
           output = model(batch)
           predictions.extend(output.view(-1).cpu().numpy())
           ground_truth.extend(batch["target"].view(-1).cpu().numpy())
-
+      
       return predictions, ground_truth
 
     def get_loss_function(self, loss_type):
