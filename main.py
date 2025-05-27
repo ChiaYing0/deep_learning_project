@@ -41,8 +41,9 @@ def main(args):
         # 載入訓練好的 checkpoint
         checkpoint_path = config.get("checkpoint_path", "model_ckpt.pt")
         print(f"Loading checkpoint from {checkpoint_path} ...")
-        model.load_state_dict(torch.load(checkpoint_path, map_location=trainer.device))
-
+        checkpoint = torch.load(checkpoint_path, map_location=trainer.device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        
         predictions, ground_truth = trainer.test(model, test_set)
 
         # 儲存結果
