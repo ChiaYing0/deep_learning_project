@@ -1,5 +1,6 @@
 # --- mm model ---
 mm_model_dim: 512
+mm_model_num_layers: 3
 
 # --- Dataset / Data Split ---
 
@@ -16,17 +17,31 @@ image_dir: "./images/" # 所有清理好的圖片統一放此資料夾
 
 # --- Training ---
 use_log: True
-lr: 0.0001
-batch_size: 32
-epochs: 20
-weight_decay: 0.0002
-loss_type: "mae"  # 可選："mae"、"mse"、"huber"
+# lr: 0.03
+# batch_size: 30
+# epochs: 5
+# weight_decay: 0.01
+# loss_type: "mse"  # 可選："mae"、"mse"、"huber"
+# huber_beta: 5.0  # huber loss 的 beta 值
+loss_type: 'quantile'
+lr: 0.0005           # Much lower LR
+epochs: 100        # More epochs with early stopping
+individual_epochs: 40 # No k-fold CV, so individual epochs
+batch_size: 40    # Smaller batches
+weight_decay: 0.02 # Strong regularization
+n_splits: 5        # 5-fold CV
+patience: 15       # Patient early stopping
+huber_beta: 10.0
+quantile_q: 0.7
+asymmetric_alpha: 1.5
+
+
 
 # --- meta ---
 meta_input_dim: 51        # number of meta features
-meta_hidden_dims: [512,360] #  hidden layers
+meta_hidden_dims: [256,512,256] #  hidden layers
 meta_embedding_dim: 128    # final embedding size
-meta_dropout: 0.1            # % of dropout
+meta_dropout: 0.05          # % of dropout
 meta_encoder_ckpt: "meta/meta_encoder.pth"
 meta_pretrain: False # pretrained or not
 
