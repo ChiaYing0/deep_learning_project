@@ -20,8 +20,8 @@ shap_feature: "./shap_feature_ranking.csv" # SHAP 特徵排名
 
 # --- Training ---
 use_log: True
-loss_type: 'mae'
-lr: 0.0007           # learning rate
+loss_type: 'quantile'
+lr: 0.0006           # learning rate
 epochs: 100        # Epochs for k-fold CV
 regular_epochs: 40 # No k-fold CV, so individual epochs
 batch_size: 40    # 
@@ -29,7 +29,7 @@ weight_decay: 0.02 #
 n_splits: 5        # 5-fold CV
 patience: 15       # Patient early stopping
 huber_beta: 10.0
-quantile_q: 0.9
+quantile_q: 0.7
 asymmetric_alpha: 1.5
 use_shap: true
 
