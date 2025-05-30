@@ -39,11 +39,31 @@ class Dataset(data.Dataset):
     def init_meta_dataset(self, config):
         # [Meta]
         drop_cols = ["target", "target_log"]
+        
+         # 先刪除 target > 100 的資料
+        before_rows = len(self.df)
+        self.df = self.df[self.df["target"] <= 100].copy()
+        after_rows = len(self.df)
+        print(f"✅ 已刪除 target > 100 的資料，共移除 {before_rows - after_rows} 筆")
 
         meta_cols = (
             self.df.select_dtypes(include=["number"]).drop(columns=drop_cols).columns
         )
         # extract and store as a float32 NumPy array
+        
+        # 如果有config 指定使用 SHAP 選特徵，則載入 selected_feature.csv
+        if config.get("use_shap", None):
+            selected_path = config.get("shap_feature", None)
+            if os.path.exists(selected_path):
+                df_selected = pd.read_csv(selected_path)
+                selected_idx = [int(f[1:]) for f in df_selected["feature"].tolist()]  # f3 → 3
+
+                # 轉成欄位名稱（根據 index 對應 meta_cols）
+                meta_cols = [meta_cols[i] for i in selected_idx]
+                print(f"✅ SHAP 選特徵載入成功，保留欄位數：{len(meta_cols)}")
+            else:
+                print("ℹ️ 找不到 selected_feature.csv，將使用全部 meta 特徵")
+
         self.meta = self.df[meta_cols].astype(np.float32).values
 
     def init_target_dataset(self, config):
