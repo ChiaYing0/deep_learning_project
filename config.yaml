@@ -1,6 +1,8 @@
 # --- mm model ---
 mm_model_dim: 512
 mm_model_num_layers: 3
+mm_model_num_heads: 4
+
 
 # --- Dataset / Data Split ---
 
@@ -13,35 +15,42 @@ train_csv: "./data/train_robust.csv"
 val_csv: "./data/val_robust.csv"
 test_csv: "./data/test_robust.csv"
 image_dir: "./images/" # 所有清理好的圖片統一放此資料夾
+shap_feature: "./shap_feature_ranking.csv" # SHAP 特徵排名
 
 
 # --- Training ---
 use_log: True
-# lr: 0.03
-# batch_size: 30
-# epochs: 5
-# weight_decay: 0.01
-# loss_type: "mse"  # 可選："mae"、"mse"、"huber"
-# huber_beta: 5.0  # huber loss 的 beta 值
-loss_type: 'quantile'
-lr: 0.0005           # Much lower LR
-epochs: 100        # More epochs with early stopping
-individual_epochs: 40 # No k-fold CV, so individual epochs
-batch_size: 40    # Smaller batches
-weight_decay: 0.02 # Strong regularization
+loss_type: 'mae'
+lr: 0.0007           # learning rate
+epochs: 100        # Epochs for k-fold CV
+regular_epochs: 40 # No k-fold CV, so individual epochs
+batch_size: 40    # 
+weight_decay: 0.02 # 
 n_splits: 5        # 5-fold CV
 patience: 15       # Patient early stopping
 huber_beta: 10.0
-quantile_q: 0.7
+quantile_q: 0.9
 asymmetric_alpha: 1.5
-
+use_shap: true
 
 
 # --- meta ---
 meta_input_dim: 51        # number of meta features
+meta_intput_dim_shap: 20 # number of meta features from SHAP
 meta_hidden_dims: [256,512,256] #  hidden layers
 meta_embedding_dim: 128    # final embedding size
 meta_dropout: 0.05          # % of dropout
 meta_encoder_ckpt: "meta/meta_encoder.pth"
 meta_pretrain: False # pretrained or not
+
+# --- image(model.py) ---
+freeze_img_net: False
+freeze_img_layers:
+  - conv1
+  - bn1
+  - layer1
+  - layer2
+  - layer3
+
+
 
