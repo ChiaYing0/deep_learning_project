@@ -60,10 +60,10 @@ class Trainer:
             output = model(batch)
             
             target = batch["target"].float().view(-1)
-            output_raw = torch.expm1(output)
-            target_raw = torch.expm1(target)
-            loss = self.criterion(output_raw.view(-1), target_raw.view(-1))
-            # loss = self.criterion(output.view(-1), target)
+            # output_raw = torch.expm1(output)
+            # target_raw = torch.expm1(target)
+            # loss = self.criterion(output_raw.view(-1), target_raw.view(-1))
+            loss = self.criterion(output.view(-1), target)
 
             optimizer.zero_grad()
             loss.backward()
@@ -165,16 +165,16 @@ class Trainer:
                 output = model(batch)
                 target = batch["target"].float().view(-1)
               
-                output_raw = torch.expm1(output)
-                target_raw = torch.expm1(target)
+                # output_raw = torch.expm1(output)
+                # target_raw = torch.expm1(target)
 
-                predictions.extend(output_raw.view(-1).cpu().numpy())
+                # predictions.extend(output_raw.view(-1).cpu().numpy())
                 ground_truth.extend(batch["target"].view(-1).cpu().numpy())
 
-                loss = self.criterion(output_raw.view(-1), target_raw)
+                # loss = self.criterion(output_raw.view(-1), target_raw)
 
-                # predictions.extend(output.view(-1).cpu().numpy())
-                # loss = self.criterion(output.view(-1), target)
+                predictions.extend(output.view(-1).cpu().numpy())
+                loss = self.criterion(output.view(-1), target)
 
                 total_loss += loss.item()
 
@@ -197,9 +197,9 @@ class Trainer:
             batch[key] = batch[key].to(self.device)
 
           output = model(batch)
-          output_raw = torch.expm1(output)
-          predictions.extend(output_raw.view(-1).cpu().numpy())
-          # predictions.extend(output.view(-1).cpu().numpy())
+          # output_raw = torch.expm1(output)
+          # predictions.extend(output_raw.view(-1).cpu().numpy())
+          predictions.extend(output.view(-1).cpu().numpy())
           ground_truth.extend(batch["target"].view(-1).cpu().numpy())
       
       return predictions, ground_truth
