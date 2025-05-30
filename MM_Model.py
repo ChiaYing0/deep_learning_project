@@ -2,6 +2,17 @@ import torch.nn as nn
 import torch
 from positional_encodings.torch_encodings import PositionalEncodingPermute2D
 
+class FusionGate(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.gate = nn.Sequential(
+            nn.Linear(dim * 2, dim),
+            nn.Sigmoid()
+        )
+
+    def forward(self, img, meta):
+        gate = self.gate(torch.cat([img, meta], dim=1))
+        return gate * img + (1 - gate) * meta
 
 class MM_Model(nn.Module):
     def __init__(self, config, img_dim, meta_dim):
@@ -13,15 +24,36 @@ class MM_Model(nn.Module):
         self.meta_align_mlp = nn.Linear(meta_dim, self.dim)
         self.img_mode_emb = nn.Parameter(torch.rand(self.dim), requires_grad=True)
         self.meta_mode_emb = nn.Parameter(torch.rand(self.dim), requires_grad=True)
+        self.num_layers = config.get('mm_model_num_layers', 3)
+        self.num_heads = config.get('mm_model_num_heads', 4)
 
-        self.transformer = nn.TransformerEncoderLayer(
-            d_model = self.dim,
-            nhead = 4,
-            batch_first=False
+        # self.transformer = nn.TransformerEncoderLayer(
+        #     d_model = self.dim,
+        #     nhead = 4,
+        #     batch_first=False
+        # )
+
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(
+                d_model=self.dim,
+                nhead=self.num_heads,
+                batch_first=False,
+                dropout=0.05  # Add dropout
+            ),
+            num_layers=self.num_layers  # Use multiple layers
         )
 
-        self.regression_head = nn.Linear(self.dim, 1)
-
+        # self.regression_head = nn.Linear(self.dim, 1)
+        self.regression_head = nn.Sequential(
+            nn.Linear(self.dim, 256),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(256, 64),
+            nn.ReLU(),
+            nn.Dropout(0.05),
+            nn.Linear(64, 1)
+        )
+        self.fusion_gate = FusionGate(self.dim)
 
     def add_pos_encoding(self, img_logit):
 
@@ -57,6 +89,9 @@ class MM_Model(nn.Module):
         output = output.permute(1, 2, 0)
         output = self.regression_head(output.mean(-1))
 
+        # # 測 MetaNet Only
+        # # output = self.regression_head(meta_logit.squeeze(2))
 
         return output
+        
 
