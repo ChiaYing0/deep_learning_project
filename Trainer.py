@@ -20,23 +20,17 @@ class Trainer:
       self.huber_beta = config.get("huber_beta", 10.0)
       self.criterion = self.get_loss_function(self.loss_type)
       self.lr = config.get("lr", 1e-4)
-      self.epochs = config.get("individual_epochs", 10)
+      self.epochs = config.get("regular_epochs", 10)
       self.batch_size = config.get("batch_size", 4)
       self.weight_decay = config.get("weight_decay", 0.0)
       self.checkpoint_path = config.get("checkpoint_path", "model_ckpt.pt")
       self.best_val_loss = float("inf")
       self.patience = config.get("patience", 5)  # Early stopping patience
+      self.freeze_img_net = config.get("freeze_img_net", True)
+      self.freeze_img_layers = config.get("freeze_img_layers", [])
       self.train_logs = []
 
-      self.training_meta = {
-        "loss_type": self.loss_type,
-        "quantile_q": config.get("quantile_q", 0.9) if self.loss_type == "quantile" else None,
-        "learning_rate": self.lr,
-        "batch_size": self.batch_size,
-        "num_epochs": self.epochs,
-        "optimizer": "Adam" 
-        
-      }
+      self.training_meta = config
  
 
     def train(self, model, train_dataset, valid_dataset):
