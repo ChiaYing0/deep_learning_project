@@ -39,12 +39,6 @@ class Dataset(data.Dataset):
     def init_meta_dataset(self, config):
         # [Meta]
         drop_cols = ["target", "target_log"]
-        
-         # 先刪除 target > 100 的資料
-        before_rows = len(self.df)
-        self.df = self.df[self.df["target"] <= 100].copy()
-        after_rows = len(self.df)
-        print(f"✅ 已刪除 target > 100 的資料，共移除 {before_rows - after_rows} 筆")
 
         meta_cols = (
             self.df.select_dtypes(include=["number"]).drop(columns=drop_cols).columns
