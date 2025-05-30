@@ -22,7 +22,20 @@ class Model(nn.Module):
         # [Image]
         # 實作net，使用 ResNet50 提取特徵
         base = models.resnet50(pretrained=True)
+
+        # 凍結 從config 取得是否凍結 img_net
+        # 以及凍結的 layer 名稱
+        freeze_img_net = config.get("freeze_img_net", True)
+        if freeze_img_net:
+            freeze_layers = config.get("freeze_img_layers", [])
+            if freeze_layers:
+                for name, param in base.named_parameters():
+                    if any(name.startswith(layer_name) for layer_name in freeze_layers):
+                        param.requires_grad = False
+        else:
+            print("Not freezing any layers in the image network. Check your config.")
         backbone = nn.Sequential(*list(base.children())[:-1])
+        
         return backbone
         # return nn.Identity()
 
