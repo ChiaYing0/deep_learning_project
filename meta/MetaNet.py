@@ -22,15 +22,15 @@ class MetaNet(nn.Module):
 
         # self.encoder = nn.Sequential(*layers)  # <-- 這行不能漏！
 
-        embedding_dim = config.get("meta_embedding_dim", 128)
+        embedding_dim = config.get("meta_embedding_dim", 256)
 
         # Use shape input dimension if specified, otherwise use all features
         if config.get("use_shap", False):
             input_dim = config.get("meta_input_dim_shap", 20)
         else:
-            input_dim = config.get("meta_input_dim", 51)
+            input_dim = config.get("meta_input_dim", 457)
 
-        dropout = config.get("meta_dropout", 0.1)
+        dropout = config.get("meta_dropout", 0.3)
         self.encoder = nn.Sequential(
             nn.Linear(input_dim, 1024),
             nn.BatchNorm1d(1024),
@@ -40,13 +40,9 @@ class MetaNet(nn.Module):
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(512, 256),   
-            nn.BatchNorm1d(256),
-            nn.ReLU(),  
-            nn.Dropout(dropout),
-            nn.Linear(256, embedding_dim),
+            nn.Linear(512, embedding_dim),
             nn.BatchNorm1d(embedding_dim),
-            nn.ReLU()
+            nn.ReLU(),
         )
 
     def forward(self, x):

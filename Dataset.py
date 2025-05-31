@@ -14,71 +14,60 @@ class Dataset(data.Dataset):
         # [Image]
         # 準備資料集
         # 從 img 欄位取出圖片檔案名稱
-        self.img_paths = self.df["img"].values
-        self.folder = "./images"
+        self.img_paths = self.df.index.values
+        self.folder = "./train_images"
 
         # transform
         if self.mode == "train":
-            self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225])
-            ])
+            self.transform = transforms.Compose(
+                [
+                    transforms.Resize((224, 224)),
+                    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                    ),
+                ]
+            )
         else:
-            self.transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225])
-            ])
+            self.transform = transforms.Compose(
+                [
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                    ),
+                ]
+            )
 
         return None
 
     def init_meta_dataset(self, config):
         # [Meta]
-        drop_cols = ["target", "target_log"]
+        drop_cols = ["AdoptionSpeed"]
 
         meta_cols = (
             self.df.select_dtypes(include=["number"]).drop(columns=drop_cols).columns
         )
         # extract and store as a float32 NumPy array
-        
-        # 如果有config 指定使用 SHAP 選特徵，則載入 selected_feature.csv
-        if config.get("use_shap", None):
-            selected_path = config.get("shap_feature", None)
-            if os.path.exists(selected_path):
-                df_selected = pd.read_csv(selected_path)
-                selected_idx = [int(f[1:]) for f in df_selected["feature"].tolist()]  # f3 → 3
-
-                # 轉成欄位名稱（根據 index 對應 meta_cols）
-                meta_cols = [meta_cols[i] for i in selected_idx]
-                print(f"✅ SHAP 選特徵載入成功，保留欄位數：{len(meta_cols)}")
-            else:
-                print("ℹ️ 找不到 selected_feature.csv，將使用全部 meta 特徵")
 
         self.meta = self.df[meta_cols].astype(np.float32).values
 
     def init_target_dataset(self, config):
         # [Target]
-        if config["use_log"]:
-            self.target = self.df["target_log"].astype(np.float32).values
-        else:
-            self.target = self.df["target"].astype(np.float32).values
 
-        return None
+        self.target = self.df["AdoptionSpeed"].astype(np.float32).values
 
     def __init__(self, config, mode="train"):
 
         self.mode = mode
 
         if mode == "train":
-            self.df = pd.read_csv(config["train_csv"], index_col="id")
+            self.df = pd.read_csv(config["train_csv"], index_col="PetID")
         elif mode == "valid":
-            self.df = pd.read_csv(config["val_csv"], index_col="id")
+            self.df = pd.read_csv(config["val_csv"], index_col="PetID")
         elif mode == "inference":
-            self.df = pd.read_csv(config["test_csv"], index_col="id")
+            self.df = pd.read_csv(config["test_csv"], index_col="PetID")
 
         self.init_img_dataset(config)
         self.init_meta_dataset(config)
@@ -92,13 +81,13 @@ class Dataset(data.Dataset):
     def get_img_data(self, index):
         # [Image]
         # 拿指定index的資料
-        img_name = self.img_paths[index]
+        img_name = self.img_paths[index] + "-1.jpg"
         img_path = os.path.join(self.folder, img_name)
 
         if not os.path.exists(img_path):
             print(f"！！圖片不存在：{img_path}\n")
             return torch.zeros(3, 224, 224)  # 回傳黑圖代替，避免 crash
-        
+
         image = Image.open(img_path).convert("RGB")
         return self.transform(image)  # (C, H, W)
 
@@ -115,7 +104,7 @@ class Dataset(data.Dataset):
     def get_target_data(self, index):
         # [Target]
         # 無論是train, validation, test 都回傳target
-        return tensor(self.target[index])
+        return tensor(self.target[index], dtype=torch.long)
 
         # # [Target]
         # # return fake target (e.g. 0) when mode = inference
@@ -123,7 +112,6 @@ class Dataset(data.Dataset):
         #     return tensor(self.target[index])
         # else:
         #     return tensor(0.0)
-        
 
     def __getitem__(self, index):
         return {

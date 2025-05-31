@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "mm_model_dim": 512,
+    "mm_model_num_layers": 3,
+    "mm_model_num_heads": 4,
+    "mm_model_output_dim": 4,
+    "train_csv": "./data/train_new.csv",
+    "val_csv": "./data/val_new.csv",
+    "test_csv": "./data/test_new.csv",
+    "image_dir": "./images/",
+    "shap_feature": "./shap_feature_ranking.csv",
+    "use_log": true,
+    "loss_type": "CE",
+    "lr": 0.0001,
+    "epochs": 100,
+    "regular_epochs": 1,
+    "batch_size": 128,
+    "weight_decay": 0.02,
+    "n_splits": 5,
+    "patience": 15,
+    "huber_beta": 10.0,
+    "quantile_q": 0.7,
+    "asymmetric_alpha": 1.5,
+    "use_shap": false,
+    "meta_input_dim": 457,
+    "meta_intput_dim_shap": 20,
+    "meta_hidden_dims": [
+      1024,
+      512
+    ],
+    "meta_embedding_dim": 256,
+    "meta_dropout": 0.3,
+    "freeze_img_net": false,
+    "freeze_img_layers": [
+      "conv1",
+      "bn1",
+      "layer1",
+      "layer2",
+      "layer3"
+    ]
+  },
+  "logs": [
+    {
+      "epoch": 1,
+      "train_loss": 1.357360434222531,
+      "val_loss": 1.3092213988304138
+    }
+  ]
+}

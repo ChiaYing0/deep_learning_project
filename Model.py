@@ -3,6 +3,7 @@ import torch.nn as nn
 from MM_Model import MM_Model
 from torchvision import models
 from meta.MetaNet import MetaNet
+from torchvision.models import resnet50, ResNet50_Weights
 
 # class MM_Model(nn.Module):
 
@@ -21,7 +22,8 @@ class Model(nn.Module):
     def get_img_net(self, config):
         # [Image]
         # 實作net，使用 ResNet50 提取特徵
-        base = models.resnet50(pretrained=True)
+        weights = ResNet50_Weights.DEFAULT  # 或使用其他權重集
+        base = resnet50(weights=weights)
 
         # 凍結 從config 取得是否凍結 img_net
         # 以及凍結的 layer 名稱
@@ -34,10 +36,13 @@ class Model(nn.Module):
                         param.requires_grad = False
         else:
             print("Not freezing any layers in the image network. Check your config.")
+
         backbone = nn.Sequential(*list(base.children())[:-1])
-        
+
+        return DummyBackbone(
+            output_shape=(2048, 1, 1)
+        )  # ⚠️⚠️ 測試用，記得拿掉換成backbone！⚠️⚠️
         return backbone
-        # return nn.Identity()
 
     def get_img_data_from_batch(self, batch):
         # [Image]
@@ -53,23 +58,6 @@ class Model(nn.Module):
     def get_meta_net(self, config):
         # [Meta] 實作net
         net = MetaNet(config)
-
-        if config.get(
-            "meta_pretrain", False
-        ):  # meta_pretrain 為 True 則 load pretrained 的 參數
-            ckpt_path = config.get("meta_encoder_ckpt")
-            if ckpt_path:
-                state_dict = torch.load(ckpt_path)
-                net.encoder.load_state_dict(state_dict)
-                print(f"Loaded pretrained meta encoder from {ckpt_path}")
-            else:
-                print(
-                    "meta_pretrain is True but no 'meta_encoder_ckpt' path is provided."
-                )
-
-        else:
-            print("Meta Net Loaded from scratch.")
-
         return net
 
     def get_meta_data_from_batch(self, batch):
@@ -108,3 +96,13 @@ class Model(nn.Module):
         logit = self.mm_net(img_logit, meta_logit)
 
         return logit
+
+
+class DummyBackbone(nn.Module):
+    def __init__(self, output_shape=(2048, 1, 1)):
+        super().__init__()
+        self.output_shape = output_shape
+
+    def forward(self, x):
+        batch_size = x.size(0)
+        return torch.zeros(batch_size, *self.output_shape, device=x.device)
