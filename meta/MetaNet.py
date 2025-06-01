@@ -28,15 +28,11 @@ class MetaNet(nn.Module):
         if config.get("use_shap", False):
             input_dim = config.get("meta_input_dim_shap", 20)
         else:
-            input_dim = config.get("meta_input_dim", 457)
+            input_dim = config.get("meta_input_dim", 435)
 
         dropout = config.get("meta_dropout", 0.3)
         self.encoder = nn.Sequential(
-            nn.Linear(input_dim, 1024),
-            nn.BatchNorm1d(1024),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(1024, 512),
+            nn.Linear(input_dim, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
             nn.Dropout(dropout),

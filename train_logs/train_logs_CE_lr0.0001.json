@@ -4,9 +4,9 @@
     "mm_model_num_layers": 3,
     "mm_model_num_heads": 4,
     "mm_model_output_dim": 4,
-    "train_csv": "./data/train_new.csv",
-    "val_csv": "./data/val_new.csv",
-    "test_csv": "./data/test_new.csv",
+    "train_csv": "./data/train_class.csv",
+    "val_csv": "./data/val_class.csv",
+    "test_csv": "./data/test_class.csv",
     "image_dir": "./images/",
     "shap_feature": "./shap_feature_ranking.csv",
     "use_log": true,
@@ -22,10 +22,9 @@
     "quantile_q": 0.7,
     "asymmetric_alpha": 1.5,
     "use_shap": false,
-    "meta_input_dim": 457,
+    "meta_input_dim": 435,
     "meta_intput_dim_shap": 20,
     "meta_hidden_dims": [
-      1024,
       512
     ],
     "meta_embedding_dim": 256,
@@ -42,8 +41,8 @@
   "logs": [
     {
       "epoch": 1,
-      "train_loss": 1.357360434222531,
-      "val_loss": 1.3092213988304138
+      "train_loss": 1.3451530933380127,
+      "val_loss": 1.2725541591644287
     }
   ]
 }

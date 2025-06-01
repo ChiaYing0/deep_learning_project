@@ -14,8 +14,8 @@ class Dataset(data.Dataset):
         # [Image]
         # 準備資料集
         # 從 img 欄位取出圖片檔案名稱
-        self.img_paths = self.df.index.values
-        self.folder = "./train_images"
+        self.img_paths = self.df["img"].values
+        self.folder = "./images"
 
         # transform
         if self.mode == "train":
@@ -44,7 +44,7 @@ class Dataset(data.Dataset):
 
     def init_meta_dataset(self, config):
         # [Meta]
-        drop_cols = ["AdoptionSpeed"]
+        drop_cols = ["target"]
 
         meta_cols = (
             self.df.select_dtypes(include=["number"]).drop(columns=drop_cols).columns
@@ -56,18 +56,18 @@ class Dataset(data.Dataset):
     def init_target_dataset(self, config):
         # [Target]
 
-        self.target = self.df["AdoptionSpeed"].astype(np.float32).values
+        self.target = self.df["target"].astype(np.float32).values
 
     def __init__(self, config, mode="train"):
 
         self.mode = mode
 
         if mode == "train":
-            self.df = pd.read_csv(config["train_csv"], index_col="PetID")
+            self.df = pd.read_csv(config["train_csv"], index_col="id")
         elif mode == "valid":
-            self.df = pd.read_csv(config["val_csv"], index_col="PetID")
+            self.df = pd.read_csv(config["val_csv"], index_col="id")
         elif mode == "inference":
-            self.df = pd.read_csv(config["test_csv"], index_col="PetID")
+            self.df = pd.read_csv(config["test_csv"], index_col="id")
 
         self.init_img_dataset(config)
         self.init_meta_dataset(config)
@@ -81,7 +81,7 @@ class Dataset(data.Dataset):
     def get_img_data(self, index):
         # [Image]
         # 拿指定index的資料
-        img_name = self.img_paths[index] + "-1.jpg"
+        img_name = self.img_paths[index]
         img_path = os.path.join(self.folder, img_name)
 
         if not os.path.exists(img_path):
