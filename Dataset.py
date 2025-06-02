@@ -2,6 +2,7 @@ import torch.utils.data as data
 import numpy as np
 import pandas as pd
 import os
+import glob
 import torch
 from torch import tensor
 from PIL import Image
@@ -56,7 +57,7 @@ class Dataset(data.Dataset):
     def init_target_dataset(self, config):
         # [Target]
 
-        self.target = self.df["AdoptionSpeed"].astype(np.float32).values
+        self.target = self.df["AdoptionSpeed"].astype(np.int64).values
 
     def __init__(self, config, mode="train"):
 
@@ -81,12 +82,18 @@ class Dataset(data.Dataset):
     def get_img_data(self, index):
         # [Image]
         # 拿指定index的資料
-        img_name = self.img_paths[index] + "-1.jpg"
-        img_path = os.path.join(self.folder, img_name)
+        pet_id = self.img_paths[index]
+        img_glob_pattern = os.path.join(self.folder, f"{pet_id}-*.jpg")
 
-        if not os.path.exists(img_path):
-            print(f"！！圖片不存在：{img_path}\n")
-            return torch.zeros(3, 224, 224)  # 回傳黑圖代替，避免 crash
+        # 找所有符合的圖片
+        matched_imgs = glob.glob(img_glob_pattern)
+        if not matched_imgs:
+            print(f"！！沒有找到圖片：{pet_id}-*.jpg")
+            return torch.zeros(3, 224, 224)  # 回傳黑圖
+
+        # 優先使用編號最小的那張 (理論上只有一張圖片)
+        matched_imgs.sort()  # 確保順序一致
+        img_path = matched_imgs[0]
 
         image = Image.open(img_path).convert("RGB")
         return self.transform(image)  # (C, H, W)
