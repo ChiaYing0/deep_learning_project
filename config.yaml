@@ -31,7 +31,7 @@ patience: 15       # Patient early stopping
 huber_beta: 10.0
 quantile_q: 0.7
 asymmetric_alpha: 1.5
-use_shap: true
+use_shap: false
 
 
 # --- meta ---
