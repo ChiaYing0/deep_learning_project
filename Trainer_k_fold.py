@@ -87,10 +87,10 @@ class KFoldTrainer:
                 # Forward pass
                 output = model(batch)
                 target = batch["target"].float().view(-1)
-                # loss = self.criterion(output.view(-1), target)
-                output_raw = torch.expm1(output)
-                target_raw = torch.expm1(target)
-                loss = self.criterion(output_raw.view(-1), target_raw)
+                loss = self.criterion(output.view(-1), target)
+                # output_raw = torch.expm1(output)
+                # target_raw = torch.expm1(target)
+                # loss = self.criterion(output_raw.view(-1), target_raw)
                 
                 # Backward pass
                 optimizer.zero_grad()
@@ -153,10 +153,10 @@ class KFoldTrainer:
                 
                 output = model(batch)
                 target = batch["target"].float().view(-1)
-                # loss = self.criterion(output.view(-1), target)
-                output_raw = torch.expm1(output)
-                target_raw = torch.expm1(target)
-                loss = self.criterion(output_raw.view(-1), target_raw)
+                loss = self.criterion(output.view(-1), target)
+                # output_raw = torch.expm1(output)
+                # target_raw = torch.expm1(target)
+                # loss = self.criterion(output_raw.view(-1), target_raw)
 
 
                 total_loss += loss.item()
@@ -316,8 +316,9 @@ class KFoldTrainer:
                         batch[key] = batch[key].to(self.device)
                     
                     output = model(batch)
-                    output_raw = torch.expm1(output)  # Apply expm1 to get original scale
-                    fold_predictions.extend(output_raw.view(-1).cpu().numpy())
+                    fold_predictions.extend(output.view(-1).cpu().numpy())
+                    # output_raw = torch.expm1(output)  # Apply expm1 to get original scale
+                    # fold_predictions.extend(output_raw.view(-1).cpu().numpy())
             
             all_predictions.append(np.array(fold_predictions))
         
