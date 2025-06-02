@@ -174,3 +174,19 @@ cython_debug/
 .pypirc
 
 .DS_Store
+
+# model
+model_ckpt.pt
+cat_boost_predictions.npy
+catboost_info/
+kfold_models/
+
+# reult
+result/ground_truth.npy
+result/individual_fold_predictions.npy
+result/val_ground_truth.npy
+result/val_predictions.npy
+catboost_test_predictions.npy
+
+# logs
+train_logs/
