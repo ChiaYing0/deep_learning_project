@@ -64,10 +64,7 @@ class Trainer:
 
                 output = model(batch)
 
-                target = batch["target"]
-                # output_raw = torch.expm1(output)
-                # target_raw = torch.expm1(target)
-                # loss = self.criterion(output_raw.view(-1), target_raw.view(-1))
+                target = batch["target"].long()  # 確保是 LongTensor
                 loss = self.criterion(output, target)
 
                 optimizer.zero_grad()
@@ -207,16 +204,6 @@ class Trainer:
                 ground_truth.extend(batch["target"].long().cpu().numpy())
 
         return predictions, ground_truth
-
-    @staticmethod
-    def quantile_loss(preds, target, q):
-        diff = target - preds
-        return torch.max((q - 1) * diff, q * diff).mean()
-
-    @staticmethod
-    def asymmetric_loss(preds, target, alpha=1.5):
-        diff = preds - target
-        return torch.where(diff < 0, alpha * diff.abs(), diff.abs()).mean()
 
     def get_loss_function(self, loss_type):
         if loss_type == "CE":
