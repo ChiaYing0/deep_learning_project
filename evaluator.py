@@ -87,7 +87,7 @@ class ModelEvaluator:
         print(f"Recall   : {recall:.4f}")
         print(f"F1-Score : {f1:.4f}")
         print("\nClassification Report:")
-        print(classification_report(self.ground_truth, self.predictions))
+        print(classification_report(self.ground_truth, self.predictions, zero_division=0))
 
         return {
             "accuracy": acc,
