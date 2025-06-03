@@ -21,10 +21,10 @@ shap_feature: "./shap_feature_ranking.csv" # SHAP 特徵排名
 # --- Training ---
 use_log: True
 loss_type: 'CE'
-lr: 0.0001           # learning rate
+lr: 0.0003           # learning rate
 epochs: 100        # Epochs for k-fold CV
 regular_epochs: 10 # No k-fold CV, so individual epochs
-batch_size: 50    # 
+batch_size: 35    # 
 weight_decay: 0.02 # 
 n_splits: 5        # 5-fold CV
 patience: 15       # Patient early stopping
@@ -35,11 +35,11 @@ use_shap: false
 
 
 # --- meta ---
-meta_input_dim: 51        # number of meta features
+meta_input_dim: 435        # number of meta features
 meta_intput_dim_shap: 20 # number of meta features from SHAP
 meta_hidden_dims: [512] #  hidden layers
 meta_embedding_dim: 256    # final embedding size
-meta_dropout: 0.3          # % of dropout
+meta_dropout: 0.4          # % of dropout
 
 # --- image(model.py) ---
 freeze_img_net: False
