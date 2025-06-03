@@ -5,6 +5,9 @@ import torch.optim as optim
 import json
 from Model import Model
 import numpy as np
+from Dataset import Dataset
+from sklearn.utils.class_weight import compute_class_weight
+
 
 
 class Trainer:
@@ -64,10 +67,7 @@ class Trainer:
 
                 output = model(batch)
 
-                target = batch["target"]
-                # output_raw = torch.expm1(output)
-                # target_raw = torch.expm1(target)
-                # loss = self.criterion(output_raw.view(-1), target_raw.view(-1))
+                target = batch["target"].long()  # 確保是 LongTensor
                 loss = self.criterion(output, target)
 
                 optimizer.zero_grad()
@@ -208,19 +208,20 @@ class Trainer:
 
         return predictions, ground_truth
 
-    @staticmethod
-    def quantile_loss(preds, target, q):
-        diff = target - preds
-        return torch.max((q - 1) * diff, q * diff).mean()
-
-    @staticmethod
-    def asymmetric_loss(preds, target, alpha=1.5):
-        diff = preds - target
-        return torch.where(diff < 0, alpha * diff.abs(), diff.abs()).mean()
-
+    def compute_class_weights(self, dataset):
+        labels = dataset.df["target"].values
+        classes = np.unique(labels)
+        weights = compute_class_weight(class_weight="balanced", classes=classes, y=labels)
+        print(f"📊 Computed class weights: {weights}")
+        weight_tensor = torch.tensor(weights, dtype=torch.float32).to(self.device)
+        return weight_tensor
+    
     def get_loss_function(self, loss_type):
         if loss_type == "CE":
-            return nn.CrossEntropyLoss()
+            train_set = Dataset(self.config, mode="train")
+            weight_tensor = self.compute_class_weights(train_set)
+            return nn.CrossEntropyLoss(weight=weight_tensor)
+            # return nn.CrossEntropyLoss()
         # elif loss_type == "mse":
         #     return nn.MSELoss()
         else:

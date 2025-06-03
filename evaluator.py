@@ -4,6 +4,16 @@ import json
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import pandas as pd
 import seaborn as sns
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    cohen_kappa_score,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    classification_report
+) 
+
 
 class ModelEvaluator:
     def __init__(self, predictions, ground_truth, train_log_path=None):
@@ -44,62 +54,133 @@ class ModelEvaluator:
         plt.ylabel("Loss")
         plt.title("Training vs. Validation Loss")
         plt.legend()
-        plt.show()
+        plt.show()   
 
-    def plot_prediction_vs_truth(self):
-        plt.scatter(self.ground_truth, self.predictions, alpha=0.5)
-        plt.plot([self.ground_truth.min(), self.ground_truth.max()],
-                 [self.ground_truth.min(), self.ground_truth.max()],
-                 color='red', linestyle='--')
-        plt.xlabel("Ground Truth")
-        plt.ylabel("Prediction")
-        plt.title("Prediction vs. Ground Truth")
-        plt.show()
 
-    def plot_error_distribution(self):
-        errors = self.predictions - self.ground_truth
-        plt.hist(errors, bins=50)
-        plt.xlabel("Prediction Error")
-        plt.ylabel("Frequency")
-        plt.title("Distribution of Prediction Errors")
-        plt.show()
+    def evaluate_metrics_with_kappa(self):
+        acc = accuracy_score(self.ground_truth, self.predictions)
+        f1 = f1_score(self.ground_truth, self.predictions, average='weighted')
+        kappa = cohen_kappa_score(self.ground_truth, self.predictions)
+        qwk = quadratic_weighted_kappa(self.ground_truth, self.predictions)
 
-    def evaluate_metrics(self):
-        mae = mean_absolute_error(self.ground_truth, self.predictions)
-        mse = mean_squared_error(self.ground_truth, self.predictions)
-        rmse = np.sqrt(mse)
-        r2 = r2_score(self.ground_truth, self.predictions)
+        print(f"Accuracy     : {acc:.4f}")
+        print(f"Weighted F1  : {f1:.4f}")
+        print(f"Cohen Kappa  : {kappa:.4f}")
+        print(f"QWK (Ordinal): {qwk:.4f}")
 
-        print(f"MAE : {mae:.4f}")
-        print(f"MSE : {mse:.4f}")
-        print(f"RMSE: {rmse:.4f}")
-        print(f"R²  : {r2:.4f}")
-        return {"mae": mae, "mse": mse, "rmse": rmse, "r2": r2}
+        return {
+            "accuracy": acc,
+            "f1_score": f1,
+            "cohen_kappa": kappa,
+            "qwk": qwk,
+        }
     
-    def check_prediction_std(self):
-        std = np.std(self.predictions)
-        uniq = len(np.unique(np.round(self.predictions, 2)))
-        print(f"📉 Std: {std:.4f} | Unique values (2 decimal): {uniq}")
-        if std < 0.1 or uniq < 5:
-            print("⚠️ Prediction Collapse Detected.")
+
+    def evaluate_metrics_with_recall(self):
+        acc = accuracy_score(self.ground_truth, self.predictions)
+        precision = precision_score(self.ground_truth, self.predictions, average='weighted', zero_division=0)
+        recall = recall_score(self.ground_truth, self.predictions, average='weighted', zero_division=0)
+        f1 = f1_score(self.ground_truth, self.predictions, average='weighted')
+
+        print(f"Accuracy : {acc:.4f}")
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall   : {recall:.4f}")
+        print(f"F1-Score : {f1:.4f}")
+        print("\nClassification Report:")
+        print(classification_report(self.ground_truth, self.predictions))
+
+        return {
+            "accuracy": acc,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+            
+        }
+    
+    def plot_confusion_matrix(self, normalize=False):
+        cm = confusion_matrix(self.ground_truth, self.predictions)
+        
+        if normalize:
+            cm = cm.astype('float') / cm.sum(axis=1, keepdims=True)
+            fmt = ".2f"
         else:
-            print("✅ Prediction distribution looks ok.")
-    
-    def plot_prediction_truth_density(self):
-        sns.kdeplot(self.ground_truth, label='Ground Truth', fill=True, linewidth=2)
-        sns.kdeplot(self.predictions, label='Prediction', fill=True, linewidth=2)
-        plt.xlabel("Value")
-        plt.ylabel("Density")
-        plt.title("Prediction vs. Ground Truth Density")
-        plt.legend()
+            fmt = "d"
+
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt=fmt, cmap="Blues", square=True, 
+                    xticklabels=range(cm.shape[0]), yticklabels=range(cm.shape[0]))
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        plt.title("Confusion Matrix" + (" (Normalized)" if normalize else ""))
         plt.tight_layout()
         plt.show()
 
-    def residual_plot(self):
-        residuals = self.predictions - self.ground_truth
-        plt.scatter(self.ground_truth, residuals, alpha=0.5)
-        plt.xlabel("Ground Truth")
-        plt.ylabel("Residuals")
-        plt.title("Residual Plot")
-        plt.axhline(0, color='red', linestyle='--')
+    def plot_per_class_recall(self):
+        """畫出每個類別的 Recall 條形圖"""
+        from sklearn.metrics import recall_score
+
+        labels = np.unique(self.ground_truth)
+        recalls = recall_score(self.ground_truth, self.predictions, labels=labels, average=None, zero_division=0)
+
+        plt.figure(figsize=(6, 4))
+        sns.barplot(x=labels, y=recalls)
+        plt.ylim(0, 1)
+        plt.xlabel("Class")
+        plt.ylabel("Recall")
+        plt.title("Per-Class Recall")
+        plt.tight_layout()
         plt.show()
+
+    def plot_misclassification_heatmap(self):
+        """視覺化每個類別的誤判去向（不含正確的主對角線）"""
+        cm = confusion_matrix(self.ground_truth, self.predictions)
+        cm_no_diag = cm.copy()
+        np.fill_diagonal(cm_no_diag, 0)  # 去掉主對角線（正確預測）
+
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(cm_no_diag, annot=True, fmt="d", cmap="Reds", square=True,
+                    xticklabels=range(cm.shape[0]), yticklabels=range(cm.shape[0]))
+        plt.xlabel("Predicted Label")
+        plt.ylabel("True Label")
+        plt.title("Misclassification Heatmap (Errors Only)")
+        plt.tight_layout()
+        plt.show()
+
+
+
+def quadratic_weighted_kappa(y_true, y_pred, min_rating=None, max_rating=None):
+    assert len(y_true) == len(y_pred)
+    y_true = np.asarray(y_true, dtype=int)
+    y_pred = np.asarray(y_pred, dtype=int)
+    
+    if min_rating is None:
+        min_rating = min(np.min(y_true), np.min(y_pred))
+        print(f"Minimum rating set to: {min_rating}")
+    if max_rating is None:
+        max_rating = max(np.max(y_true), np.max(y_pred))
+        print(f"Maximum rating set to: {max_rating}")
+    
+    num_ratings = max_rating - min_rating + 1
+    conf_mat = confusion_matrix(y_true, y_pred, labels=range(min_rating, max_rating + 1))
+    print(f"Confusion Matrix:\n{conf_mat}")
+    
+    # Get marginal distributions
+    hist_true = np.bincount(y_true - min_rating, minlength=num_ratings)
+    hist_pred = np.bincount(y_pred - min_rating, minlength=num_ratings)
+    
+    # Create weight matrix
+    weights = np.zeros((num_ratings, num_ratings))
+    for i in range(num_ratings):
+        for j in range(num_ratings):
+            weights[i][j] = ((i - j) ** 2) / ((num_ratings - 1) ** 2)
+    
+    # Calculate expected and observed agreement matrices
+    N = len(y_true)  # Total number of samples
+    expected = np.outer(hist_true, hist_pred) / N  # Expected under independence
+    observed = conf_mat  # Observed counts
+    
+    # Calculate weighted agreements
+    numerator = np.sum(weights * observed)
+    denominator = np.sum(weights * expected)
+    
+    return 1.0 - (numerator / denominator)
