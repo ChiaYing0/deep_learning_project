@@ -104,7 +104,7 @@ class Dataset(data.Dataset):
     def get_target_data(self, index):
         # [Target]
         # 無論是train, validation, test 都回傳target
-        return tensor(self.target[index], dtype=torch.long)
+        return tensor(int(self.target[index]), dtype=torch.long)
 
         # # [Target]
         # # return fake target (e.g. 0) when mode = inference
