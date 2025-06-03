@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "mm_model_dim": 512,
+    "mm_model_num_layers": 3,
+    "mm_model_num_heads": 4,
+    "mm_model_output_dim": 4,
+    "train_csv": "./data/train_class.csv",
+    "val_csv": "./data/val_class.csv",
+    "test_csv": "./data/test_class.csv",
+    "image_dir": "./images/",
+    "shap_feature": "./shap_feature_ranking.csv",
+    "use_log": true,
+    "loss_type": "CE",
+    "lr": 0.0003,
+    "epochs": 100,
+    "regular_epochs": 10,
+    "batch_size": 35,
+    "weight_decay": 0.02,
+    "n_splits": 5,
+    "patience": 15,
+    "huber_beta": 10.0,
+    "quantile_q": 0.7,
+    "asymmetric_alpha": 1.5,
+    "use_shap": false,
+    "meta_input_dim": 435,
+    "meta_intput_dim_shap": 20,
+    "meta_hidden_dims": [
+      512
+    ],
+    "meta_embedding_dim": 256,
+    "meta_dropout": 0.4,
+    "freeze_img_net": false,
+    "freeze_img_layers": [
+      "conv1",
+      "bn1",
+      "layer1",
+      "layer2",
+      "layer3"
+    ]
+  },
+  "logs": [
+    {
+      "epoch": 1,
+      "train_loss": 1.399358073870341,
+      "val_loss": 1.384737213452657
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.3764527354921614,
+      "val_loss": 1.3665552536646526
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.2892646051588512,
+      "val_loss": 1.192952315012614
+    },
+    {
+      "epoch": 4,
+      "train_loss": 1.2369211230959212,
+      "val_loss": 1.141798456509908
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.1692450784501576,
+      "val_loss": 1.2213584184646606
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.1880295219875516,
+      "val_loss": 1.2858262459437053
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.1183927740369524,
+      "val_loss": 1.207704206307729
+    },
+    {
+      "epoch": 8,
+      "train_loss": 1.1110188847496396,
+      "val_loss": 1.2178293267885845
+    },
+    {
+      "epoch": 9,
+      "train_loss": 1.010090402194432,
+      "val_loss": 1.1917932033538818
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.9675619687352862,
+      "val_loss": 1.1281078060468037
+    }
+  ]
+}
