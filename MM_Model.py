@@ -59,7 +59,7 @@ class MM_Model(nn.Module):
             nn.Dropout(0.1),
             nn.Linear(256, 64),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Dropout(0.05),
             nn.Linear(64, config.get("mm_model_output_dim", 4)),  # <- 分類任務
         )
         self.fusion_gate = FusionGate(self.dim)
