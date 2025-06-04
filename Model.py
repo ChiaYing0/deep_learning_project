@@ -39,9 +39,9 @@ class Model(nn.Module):
 
         backbone = nn.Sequential(*list(base.children())[:-1])
 
-        return DummyBackbone(
-            output_shape=(2048, 1, 1)
-        )  # ⚠️⚠️ 測試用，記得拿掉換成backbone！⚠️⚠️
+        # return DummyBackbone(
+        #     output_shape=(2048, 1, 1)
+        # )  # ⚠️⚠️ 測試用，記得拿掉換成backbone！⚠️⚠️
         return backbone
 
     def get_img_data_from_batch(self, batch):

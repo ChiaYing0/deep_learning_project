@@ -5,6 +5,9 @@ import torch.optim as optim
 import json
 from Model import Model
 import numpy as np
+from Dataset import Dataset
+from sklearn.utils.class_weight import compute_class_weight
+
 
 
 class Trainer:
@@ -205,9 +208,20 @@ class Trainer:
 
         return predictions, ground_truth
 
+    def compute_class_weights(self, dataset):
+        labels = dataset.df["AdoptionSpeed"].values
+        classes = np.unique(labels)
+        weights = compute_class_weight(class_weight="balanced", classes=classes, y=labels)
+        print(f"📊 Computed class weights: {weights}")
+        weight_tensor = torch.tensor(weights, dtype=torch.float32).to(self.device)
+        return weight_tensor
+    
     def get_loss_function(self, loss_type):
         if loss_type == "CE":
-            return nn.CrossEntropyLoss()
+            train_set = Dataset(self.config, mode="train")
+            weight_tensor = self.compute_class_weights(train_set)
+            return nn.CrossEntropyLoss(weight=weight_tensor)
+            # return nn.CrossEntropyLoss()
         # elif loss_type == "mse":
         #     return nn.MSELoss()
         else:

@@ -149,26 +149,38 @@ class ModelEvaluator:
 
 
 def quadratic_weighted_kappa(y_true, y_pred, min_rating=None, max_rating=None):
-        assert len(y_true) == len(y_pred)
-        y_true = np.asarray(y_true, dtype=int)
-        y_pred = np.asarray(y_pred, dtype=int)
-
-        if min_rating is None:
-            min_rating = min(np.min(y_true), np.min(y_pred))
-        if max_rating is None:
-            max_rating = max(np.max(y_true), np.max(y_pred))
-
-        num_ratings = max_rating - min_rating + 1
-        conf_mat = confusion_matrix(y_true, y_pred, labels=range(min_rating, max_rating + 1))
-        hist_true = np.bincount(y_true - min_rating, minlength=num_ratings)
-        hist_pred = np.bincount(y_pred - min_rating, minlength=num_ratings)
-
-        weights = np.zeros((num_ratings, num_ratings))
-        for i in range(num_ratings):
-            for j in range(num_ratings):
-                weights[i][j] = ((i - j) ** 2) / ((num_ratings - 1) ** 2)
-
-        expected = np.outer(hist_true, hist_pred) / conf_mat.sum()
-        observed = conf_mat / conf_mat.sum()
-
-        return 1.0 - (np.sum(weights * observed) / np.sum(weights * expected))
+    assert len(y_true) == len(y_pred)
+    y_true = np.asarray(y_true, dtype=int)
+    y_pred = np.asarray(y_pred, dtype=int)
+    
+    if min_rating is None:
+        min_rating = min(np.min(y_true), np.min(y_pred))
+        print(f"Minimum rating set to: {min_rating}")
+    if max_rating is None:
+        max_rating = max(np.max(y_true), np.max(y_pred))
+        print(f"Maximum rating set to: {max_rating}")
+    
+    num_ratings = max_rating - min_rating + 1
+    conf_mat = confusion_matrix(y_true, y_pred, labels=range(min_rating, max_rating + 1))
+    print(f"Confusion Matrix:\n{conf_mat}")
+    
+    # Get marginal distributions
+    hist_true = np.bincount(y_true - min_rating, minlength=num_ratings)
+    hist_pred = np.bincount(y_pred - min_rating, minlength=num_ratings)
+    
+    # Create weight matrix
+    weights = np.zeros((num_ratings, num_ratings))
+    for i in range(num_ratings):
+        for j in range(num_ratings):
+            weights[i][j] = ((i - j) ** 2) / ((num_ratings - 1) ** 2)
+    
+    # Calculate expected and observed agreement matrices
+    N = len(y_true)  # Total number of samples
+    expected = np.outer(hist_true, hist_pred) / N  # Expected under independence
+    observed = conf_mat  # Observed counts
+    
+    # Calculate weighted agreements
+    numerator = np.sum(weights * observed)
+    denominator = np.sum(weights * expected)
+    
+    return 1.0 - (numerator / denominator)
