@@ -56,6 +56,32 @@ class ModelEvaluator:
         plt.legend()
         plt.show()   
 
+    def plot_learning_rate_curve(self):
+        """
+        根據 log 檔案畫出 learning rate 隨 epoch 變化的曲線。
+
+        Args:
+            log_path (str): log 檔案的 JSON 路徑（包含 'logs' 欄位與 'lr'）
+        """
+        try:
+            with open(self.train_log_path, "r") as f:
+                data = json.load(f)
+
+            logs = data["logs"]
+            epochs = [entry["epoch"] for entry in logs]
+            lrs = [entry["lr"] for entry in logs]
+
+            plt.figure(figsize=(8, 5))
+            plt.plot(epochs, lrs, marker='o', linestyle='-')
+            plt.title("Learning Rate Curve")
+            plt.xlabel("Epoch")
+            plt.ylabel("Learning Rate")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.show()
+
+        except Exception as e:
+            print(f"❌ 無法繪製 Learning Rate Curve：{e}")
 
     def evaluate_metrics_with_kappa(self):
         acc = accuracy_score(self.ground_truth, self.predictions)
@@ -145,6 +171,45 @@ class ModelEvaluator:
         plt.title("Misclassification Heatmap (Errors Only)")
         plt.tight_layout()
         plt.show()
+    def evaluate_all_metrics(self):
+        # 計算 Accuracy、Kappa、QWK
+        acc = accuracy_score(self.ground_truth, self.predictions)
+        kappa = cohen_kappa_score(self.ground_truth, self.predictions)
+        qwk = quadratic_weighted_kappa(self.ground_truth, self.predictions)
+
+        print("=== 📊 Overall Metrics ===")
+        print(f"Accuracy       : {acc:.4f}")
+        print(f"Cohen's Kappa  : {kappa:.4f}")
+        print(f"QWK (Ordinal)  : {qwk:.4f}")
+
+        # 建立表格：Precision / Recall / F1 for macro, weighted, micro
+        rows = []
+        for avg in ["macro", "weighted", "micro"]:
+            precision = precision_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+            recall = recall_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+            f1 = f1_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+
+            rows.append({
+                "Average Type": avg.capitalize(),
+                "Precision": precision,
+                "Recall": recall,
+                "F1 Score": f1
+            })
+
+        df_metrics = pd.DataFrame(rows)
+        print("\n=== 📋 Detailed Scores by Average Type ===")
+        print(df_metrics.to_string(index=False))
+
+        print("\n=== 📝 Classification Report ===")
+        print(classification_report(self.ground_truth, self.predictions, zero_division=0))
+
+        # 回傳所有資料
+        return {
+            "accuracy": acc,
+            "cohen_kappa": kappa,
+            "qwk": qwk,
+            "table": df_metrics
+        }
 
 
 
