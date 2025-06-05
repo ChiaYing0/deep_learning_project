@@ -1,6 +1,6 @@
 # --- mm model ---
 mm_model_dim: 512
-mm_model_num_layers: 3
+mm_model_num_layers: 1
 mm_model_num_heads: 4
 mm_model_output_dim: 4
 
@@ -21,13 +21,13 @@ shap_feature: "./shap_feature_ranking.csv" # SHAP 特徵排名
 # --- Training ---
 use_log: True
 loss_type: 'CE'
-lr: 0.0003           # learning rate
+lr: 0.00003         # learning rate
 epochs: 100        # Epochs for k-fold CV
-regular_epochs: 10 # No k-fold CV, so individual epochs
-batch_size: 35    # 
+regular_epochs: 20 # No k-fold CV, so individual epochs
+batch_size: 64    # 
 weight_decay: 0.02 # 
 n_splits: 5        # 5-fold CV
-patience: 15       # Patient early stopping
+patience: 5       # Patient early stopping
 huber_beta: 10.0
 quantile_q: 0.7
 asymmetric_alpha: 1.5
@@ -42,13 +42,16 @@ meta_embedding_dim: 256    # final embedding size
 meta_dropout: 0.4          # % of dropout
 
 # --- image(model.py) ---
-freeze_img_net: False
+freeze_img_net: false
 freeze_img_layers:
-  - conv1
-  - bn1
-  - layer1
-  - layer2
-  - layer3
+  # - conv1
+  # - bn1
+  # - layer1
+  # - layer2
+  # - layer3
+# - features.0.0.weight
+# - features.0.1.weight
+# - features.0.1.bias
 
 
 
