@@ -4,6 +4,9 @@ from MM_Model import MM_Model
 from torchvision import models
 from meta.MetaNet import MetaNet
 from torchvision.models import resnet50, ResNet50_Weights
+from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+
 
 # class MM_Model(nn.Module):
 
@@ -22,8 +25,12 @@ class Model(nn.Module):
     def get_img_net(self, config):
         # [Image]
         # 實作net，使用 ResNet50 提取特徵
-        weights = ResNet50_Weights.DEFAULT  # 或使用其他權重集
-        base = resnet50(weights=weights)
+        # weights = ResNet50_Weights.DEFAULT  # 或使用其他權重集
+        # base = resnet50(weights=weights)
+
+        # ❗❗❗❗剛剛改過
+        weights = EfficientNet_B0_Weights.DEFAULT
+        base = efficientnet_b0(weights=weights)
 
         # 凍結 從config 取得是否凍結 img_net
         # 以及凍結的 layer 名稱
@@ -39,9 +46,9 @@ class Model(nn.Module):
 
         backbone = nn.Sequential(*list(base.children())[:-1])
 
-        return DummyBackbone(
-            output_shape=(2048, 1, 1)
-        )  # ⚠️⚠️ 測試用，記得拿掉換成backbone！⚠️⚠️
+        # return DummyBackbone(
+        #     output_shape=(2048, 1, 1)
+        # )  # ⚠️⚠️ 測試用，記得拿掉換成backbone！⚠️⚠️
         return backbone
 
     def get_img_data_from_batch(self, batch):
@@ -53,7 +60,11 @@ class Model(nn.Module):
         # [Image]
         # img_net output channel 數
         # ResNet50 輸出維度為 2048
-        return 2048
+        # return 2048
+
+        # ❗❗❗❗
+        # return 512  # ResNet18 輸出維度為 512
+        return 1280 # EfficientNet-B0 輸出維度1280
 
     def get_meta_net(self, config):
         # [Meta] 實作net
@@ -99,7 +110,9 @@ class Model(nn.Module):
 
 
 class DummyBackbone(nn.Module):
-    def __init__(self, output_shape=(2048, 1, 1)):
+    # def __init__(self, output_shape=(2048, 1, 1)):
+    # ❗❗❗❗
+    def __init__(self, output_shape=(1280, 1, 1)):
         super().__init__()
         self.output_shape = output_shape
 
