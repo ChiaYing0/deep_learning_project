@@ -120,6 +120,7 @@ class Trainer:
                     "epoch": epoch + 1,
                     "train_loss": avg_loss,
                     "val_loss": avg_val_loss if valid_dataset else None,
+                    "lr": optimizer.param_groups[0]["lr"]
                 }
             )
 
