@@ -81,9 +81,19 @@ class MM_Model(nn.Module):
         meta_logit = meta_logit.unsqueeze(2)
         
         img_logit, meta_logit = self.add_mode_emb(img_logit, meta_logit)
+
+        # 融合 img + meta 成一個 token
+        img_token = img_logit.mean(-1)       # [B, D]
+        meta_token = meta_logit.squeeze(2)   # [B, D]
+        fused_token = self.fusion_gate(img_token, meta_token)  # [B, D]
+        fused_token = fused_token.unsqueeze(2)   # [B, D, 1]              # [B, D, 1]
         
-        concat_logit = torch.cat([img_logit, meta_logit], 2)
-        concat_logit = concat_logit.permute(2, 0, 1)
+        # 拼接 img patch + 融合 token（用來取代 meta token）
+        concat_logit = torch.cat([img_logit, fused_token], 2)   # [B, D, H*W+1]
+        concat_logit = concat_logit.permute(2, 0, 1)   
+        
+        # concat_logit = torch.cat([img_logit, meta_logit], 2)
+        # concat_logit = concat_logit.permute(2, 0, 1)
 
         output = self.transformer(concat_logit)
         output = output.permute(1, 2, 0)

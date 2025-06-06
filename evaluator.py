@@ -68,13 +68,11 @@ class ModelEvaluator:
         mae = mean_absolute_error(self.ground_truth, self.predictions)
         mse = mean_squared_error(self.ground_truth, self.predictions)
         rmse = np.sqrt(mse)
-        r2 = r2_score(self.ground_truth, self.predictions)
 
         print(f"MAE : {mae:.4f}")
         print(f"MSE : {mse:.4f}")
         print(f"RMSE: {rmse:.4f}")
-        print(f"R²  : {r2:.4f}")
-        return {"mae": mae, "mse": mse, "rmse": rmse, "r2": r2}
+        return {"mae": mae, "mse": mse, "rmse": rmse}
     
     def check_prediction_std(self):
         std = np.std(self.predictions)
