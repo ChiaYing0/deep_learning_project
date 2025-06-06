@@ -57,45 +57,49 @@ class ModelEvaluator:
         plt.show()   
 
 
-    def evaluate_metrics_with_kappa(self):
+    def evaluate_all_metrics(self):
+        # 計算 Accuracy、Kappa、QWK
         acc = accuracy_score(self.ground_truth, self.predictions)
-        f1 = f1_score(self.ground_truth, self.predictions, average='weighted')
         kappa = cohen_kappa_score(self.ground_truth, self.predictions)
         qwk = quadratic_weighted_kappa(self.ground_truth, self.predictions)
 
-        print(f"Accuracy     : {acc:.4f}")
-        print(f"Weighted F1  : {f1:.4f}")
-        print(f"Cohen Kappa  : {kappa:.4f}")
-        print(f"QWK (Ordinal): {qwk:.4f}")
+        print("=== 📊 Overall Metrics ===")
+        print(f"Accuracy       : {acc:.4f}")
+        print(f"Cohen's Kappa  : {kappa:.4f}")
+        print(f"QWK (Ordinal)  : {qwk:.4f}")
 
+        # 建立表格：Precision / Recall / F1 for macro, weighted, micro
+        rows = []
+        for avg in ["macro", "weighted", "micro"]:
+            precision = precision_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+            recall = recall_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+            f1 = f1_score(self.ground_truth, self.predictions, average=avg, zero_division=0)
+
+            rows.append({
+                "Average Type": avg.capitalize(),
+                "Precision": precision,
+                "Recall": recall,
+                "F1 Score": f1
+            })
+
+        df_metrics = pd.DataFrame(rows)
+        print("\n=== 📋 Detailed Scores by Average Type ===")
+        print(df_metrics.to_string(index=False))
+
+        print("\n=== 📝 Classification Report ===")
+        print(classification_report(self.ground_truth, self.predictions, zero_division=0))
+
+        # 回傳所有資料
         return {
             "accuracy": acc,
-            "f1_score": f1,
             "cohen_kappa": kappa,
             "qwk": qwk,
+            "table": df_metrics
         }
-    
 
-    def evaluate_metrics_with_recall(self):
-        acc = accuracy_score(self.ground_truth, self.predictions)
-        precision = precision_score(self.ground_truth, self.predictions, average='weighted', zero_division=0)
-        recall = recall_score(self.ground_truth, self.predictions, average='weighted', zero_division=0)
-        f1 = f1_score(self.ground_truth, self.predictions, average='weighted')
 
-        print(f"Accuracy : {acc:.4f}")
-        print(f"Precision: {precision:.4f}")
-        print(f"Recall   : {recall:.4f}")
-        print(f"F1-Score : {f1:.4f}")
-        print("\nClassification Report:")
-        print(classification_report(self.ground_truth, self.predictions))
 
-        return {
-            "accuracy": acc,
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1,
-            
-        }
+
     
     def plot_confusion_matrix(self, normalize=False):
         cm = confusion_matrix(self.ground_truth, self.predictions)
@@ -147,40 +151,39 @@ class ModelEvaluator:
         plt.show()
 
 
-
 def quadratic_weighted_kappa(y_true, y_pred, min_rating=None, max_rating=None):
-    assert len(y_true) == len(y_pred)
-    y_true = np.asarray(y_true, dtype=int)
-    y_pred = np.asarray(y_pred, dtype=int)
-    
-    if min_rating is None:
-        min_rating = min(np.min(y_true), np.min(y_pred))
-        print(f"Minimum rating set to: {min_rating}")
-    if max_rating is None:
-        max_rating = max(np.max(y_true), np.max(y_pred))
-        print(f"Maximum rating set to: {max_rating}")
-    
-    num_ratings = max_rating - min_rating + 1
-    conf_mat = confusion_matrix(y_true, y_pred, labels=range(min_rating, max_rating + 1))
-    print(f"Confusion Matrix:\n{conf_mat}")
-    
-    # Get marginal distributions
-    hist_true = np.bincount(y_true - min_rating, minlength=num_ratings)
-    hist_pred = np.bincount(y_pred - min_rating, minlength=num_ratings)
-    
-    # Create weight matrix
-    weights = np.zeros((num_ratings, num_ratings))
-    for i in range(num_ratings):
-        for j in range(num_ratings):
-            weights[i][j] = ((i - j) ** 2) / ((num_ratings - 1) ** 2)
-    
-    # Calculate expected and observed agreement matrices
-    N = len(y_true)  # Total number of samples
-    expected = np.outer(hist_true, hist_pred) / N  # Expected under independence
-    observed = conf_mat  # Observed counts
-    
-    # Calculate weighted agreements
-    numerator = np.sum(weights * observed)
-    denominator = np.sum(weights * expected)
-    
-    return 1.0 - (numerator / denominator)
+        assert len(y_true) == len(y_pred)
+        y_true = np.asarray(y_true, dtype=int)
+        y_pred = np.asarray(y_pred, dtype=int)
+        
+        if min_rating is None:
+            min_rating = min(np.min(y_true), np.min(y_pred))
+            print(f"Minimum rating set to: {min_rating}")
+        if max_rating is None:
+            max_rating = max(np.max(y_true), np.max(y_pred))
+            print(f"Maximum rating set to: {max_rating}")
+        
+        num_ratings = max_rating - min_rating + 1
+        conf_mat = confusion_matrix(y_true, y_pred, labels=range(min_rating, max_rating + 1))
+        print(f"Confusion Matrix:\n{conf_mat}")
+        
+        # Get marginal distributions
+        hist_true = np.bincount(y_true - min_rating, minlength=num_ratings)
+        hist_pred = np.bincount(y_pred - min_rating, minlength=num_ratings)
+        
+        # Create weight matrix
+        weights = np.zeros((num_ratings, num_ratings))
+        for i in range(num_ratings):
+            for j in range(num_ratings):
+                weights[i][j] = ((i - j) ** 2) / ((num_ratings - 1) ** 2)
+        
+        # Calculate expected and observed agreement matrices
+        N = len(y_true)  # Total number of samples
+        expected = np.outer(hist_true, hist_pred) / N  # Expected under independence
+        observed = conf_mat  # Observed counts
+        
+        # Calculate weighted agreements
+        numerator = np.sum(weights * observed)
+        denominator = np.sum(weights * expected)
+        
+        return 1.0 - (numerator / denominator)
